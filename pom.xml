@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>biz.netcentric.atlas</groupId>
     <artifactId>bitbucket-jenkins-plugin</artifactId>
-    <version>1.2.0-SNAPSHOT</version>
+    <version>1.2.0</version>
 
     <organization>
         <name>Netcentric</name>
@@ -16,6 +16,19 @@
     <name>bitbucket-jenkins-plugin</name>
     <description>This bitbucket server plugin notifies changes jenkins about commits to a certain repository. It can be enabled on repository level.</description>
     <packaging>atlassian-plugin</packaging>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <name>Netcentric Nexus Release Repository</name>
+            <url>https://repo.int.netcentric.biz/nexus/content/repositories/netcentric-internal-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus</id>
+            <name>Netcentric Nexus Snapshot Repository</name>
+            <url>https://repo.int.netcentric.biz/nexus/content/repositories/netcentric-internal-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>

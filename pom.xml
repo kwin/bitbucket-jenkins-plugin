@@ -42,9 +42,7 @@
         <!-- This property ensures consistency between the key in atlassian-plugin.xml and the OSGi bundle's key. -->
         <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
 
-        <atlassian.spring.scanner.version>2.1.7</atlassian.spring.scanner.version>
         <javax.inject.version>1</javax.inject.version>
-        <jsr311.version>1.1.1</jsr311.version>
         <plugin.testrunner.version>2.0.1</plugin.testrunner.version>
     </properties>
     
@@ -102,15 +100,7 @@
         <dependency>
             <groupId>com.atlassian.plugin</groupId>
             <artifactId>atlassian-spring-scanner-annotation</artifactId>
-            <version>${atlassian.spring.scanner.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.atlassian.plugin</groupId>
-            <artifactId>atlassian-spring-scanner-runtime</artifactId>
-            <version>${atlassian.spring.scanner.version}</version>
-            <scope>runtime</scope>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -129,7 +119,6 @@
         <dependency>
             <groupId>javax.ws.rs</groupId>
             <artifactId>jsr311-api</artifactId>
-            <version>${jsr311.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -180,7 +169,6 @@
 
                         <!-- Add package import here -->
                         <Import-Package>
-                            org.eclipse.gemini.blueprint.*;resolution:="optional",
                             *
                         </Import-Package>
 
@@ -193,7 +181,6 @@
             <plugin>
                 <groupId>com.atlassian.plugin</groupId>
                 <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
-                <version>${atlassian.spring.scanner.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -213,6 +200,51 @@
                 </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>com.atlassian.plugin</groupId>
+                                        <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
+                                        <versionRange>[2.1.10,)</versionRange>
+                                        <goals>
+                                            <goal>atlassian-spring-scanner</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>com.atlassian.maven.plugins</groupId>
+                                        <artifactId>bitbucket-maven-plugin</artifactId>
+                                        <versionRange>[8.0.2,)</versionRange>
+                                        <goals>
+                                            <goal>generate-rest-docs</goal>
+                                            <goal>filter-test-plugin-descriptor</goal>
+                                            <goal>filter-plugin-descriptor</goal>
+                                            <goal>compress-resources</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 </project>

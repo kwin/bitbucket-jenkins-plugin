@@ -20,6 +20,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -30,7 +32,9 @@ import org.springframework.stereotype.Component;
 
 import com.atlassian.bitbucket.hook.repository.PostRepositoryHook;
 import com.atlassian.bitbucket.hook.repository.PostRepositoryHookContext;
-import com.atlassian.bitbucket.hook.repository.RepositoryPushHookRequest;
+import com.atlassian.bitbucket.hook.repository.RepositoryHookRequest;
+import com.atlassian.bitbucket.hook.repository.RepositoryHookTrigger;
+import com.atlassian.bitbucket.hook.repository.StandardRepositoryHookTrigger;
 import com.atlassian.bitbucket.repository.RepositoryCloneLinksRequest;
 import com.atlassian.bitbucket.repository.RepositoryService;
 import com.atlassian.bitbucket.scope.Scope;
@@ -53,7 +57,7 @@ import com.atlassian.sal.api.transaction.TransactionTemplate;
  * @since 04/2013
  */
 @Component
-public class JenkinsBuildTrigger implements PostRepositoryHook<RepositoryPushHookRequest>, SettingsValidator {
+public class JenkinsBuildTrigger implements PostRepositoryHook<RepositoryHookRequest>, SettingsValidator {
     private static final Logger LOG = LoggerFactory.getLogger(JenkinsBuildTrigger.class);
 
     private static final String PROPERTY_URL = "url";
@@ -61,6 +65,15 @@ public class JenkinsBuildTrigger implements PostRepositoryHook<RepositoryPushHoo
     private final PluginSettingsFactory pluginSettingsFactory;
     private final TransactionTemplate transactionTemplate;
     private final RepositoryService repositoryService;
+    
+    private static final Collection<String> RELEVANT_TRIGGER_IDS = Arrays.asList(
+            StandardRepositoryHookTrigger.BRANCH_CREATE.getId(), 
+            StandardRepositoryHookTrigger.BRANCH_DELETE.getId(),
+            StandardRepositoryHookTrigger.FILE_EDIT.getId(),
+            StandardRepositoryHookTrigger.MERGE.getId(),
+            StandardRepositoryHookTrigger.PULL_REQUEST_MERGE.getId(),
+            StandardRepositoryHookTrigger.REPO_PUSH.getId()
+    );
 
     @Autowired
     public JenkinsBuildTrigger(@ComponentImport final PluginSettingsFactory pluginSettingsFactory,
@@ -75,7 +88,10 @@ public class JenkinsBuildTrigger implements PostRepositoryHook<RepositoryPushHoo
     /**
      * Notifies Jenkins of a new commit assuming Jenkins is configured to connect to Stash via SSH.
      */
-    public void postUpdate(final PostRepositoryHookContext context, final RepositoryPushHookRequest request) {
+    public void postUpdate(final PostRepositoryHookContext context, final RepositoryHookRequest request) {
+        if (!isTriggerRelevant(request.getTrigger())) {
+            return;
+        }
         String url = context.getSettings().getString(PROPERTY_URL);
         if (StringUtils.isBlank(url)) {
             url = transactionTemplate.execute(new TransactionCallback<String>() {
@@ -85,6 +101,7 @@ public class JenkinsBuildTrigger implements PostRepositoryHook<RepositoryPushHoo
             });
         }
 
+        
         try {
             final RepositoryCloneLinksRequest linksRequest = new RepositoryCloneLinksRequest.Builder()
                     .protocol("ssh")
@@ -120,5 +137,20 @@ public class JenkinsBuildTrigger implements PostRepositoryHook<RepositoryPushHoo
                 errors.addFieldError(PROPERTY_URL, "Please supply a valid URL");
             }
         }
+    }
+
+    /**
+     * 
+     * @param trigger
+     * @return {@code true} in case the event should be propagated to Jenkins, otherwise {@code false}
+     * @see <a href="https://developer.atlassian.com/server/bitbucket/how-tos/hooks-merge-checks-guide/#choosing-hook-trigger-s-">Hook Triggers</a>
+     */
+    private boolean isTriggerRelevant(final RepositoryHookTrigger trigger) {
+        // all standard triggers relevant exception for tag related ones and unknown
+        if (RELEVANT_TRIGGER_IDS.contains(trigger.getId())) {
+            return true;
+        }
+        LOG.debug("Ignoring trigger {}", trigger);
+        return false;
     }
 }

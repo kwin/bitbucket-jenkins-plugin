@@ -44,6 +44,8 @@
 
         <javax.inject.version>1</javax.inject.version>
         <plugin.testrunner.version>2.0.1</plugin.testrunner.version>
+        <!-- must have the same version as in the bitbucket-parent -->
+        <atlassian.spring.scanner.version>2.1.7</atlassian.spring.scanner.version>
     </properties>
     
     <dependencyManagement>
@@ -181,6 +183,7 @@
             <plugin>
                 <groupId>com.atlassian.plugin</groupId>
                 <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
+                <version>${atlassian.spring.scanner.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -214,7 +217,7 @@
                                     <pluginExecutionFilter>
                                         <groupId>com.atlassian.plugin</groupId>
                                         <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
-                                        <versionRange>[2.1.10,)</versionRange>
+                                        <versionRange>[2.1.7,)</versionRange>
                                         <goals>
                                             <goal>atlassian-spring-scanner</goal>
                                         </goals>
